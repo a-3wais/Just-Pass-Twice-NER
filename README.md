@@ -1,8 +1,8 @@
 <div align="center">
 
-# Just Pass Twice (JPT)
+# Just Pass Twice (JPT): Zero-Shot Named Entity Recognition with LLMs
 
-### Efficient Token Classification with LLMs for Zero-Shot NER
+### Official code for the ACL 2026 paper *Just Pass Twice: Efficient Token Classification with LLMs for Zero-Shot NER*
 
 **Ahmed Ewais, Ahmed Hashish, Amr Ali**<br>
 WitnessAI
@@ -20,6 +20,8 @@ WitnessAI
 <img src="assets/teaser.png" width="600" alt="Top, standard causal attention: the token 'Paris' cannot attend to the later word 'album', so it could be a city or a person. Bottom, Just Pass Twice: in the second copy of the sentence, 'Paris' attends to the whole first copy and is recognized as a person.">
 
 </div>
+
+**JPT** is a zero-shot named entity recognition (NER) method that turns a decoder-only LLM into a fast token classifier. You describe the entity types you want in plain language, and JPT tags them in any text without retraining. On average, it outperforms prior zero-shot NER methods, including GLiNER, UniNER, GoLLIE and SaM, on the CrossNER and MIT benchmarks.
 
 **TL;DR:** Decoder-only LLMs read left to right, so while reading a word they can't see the words that come after it. That makes them poor at labeling individual tokens. JPT gives the model the text twice: every token in the second copy can look at the whole sentence. Combined with entity types described in plain language, this sets a new state of the art for zero-shot named entity recognition (+7.9 F1) and runs over 20× faster than LLMs that generate their answers.
 
@@ -96,6 +98,42 @@ Baseline numbers are from Zaratiana et al. (2024).
 | WikiANN | 55.4 | 58.9 | **64.7** |
 | WikiNeural | 69.2 | 71.8 | **77.3** |
 | **Average** | 45.7 | 47.8 | **55.5** |
+
+</details>
+
+<details>
+<summary><b>Related work</b>: where JPT fits among zero-shot NER methods (GLiNER, UniversalNER, GoLLIE, GNER, SaM, InstructUIE, GPT-NER, NuNER, OpenBioNER)</summary>
+<br>
+
+Zero-shot NER has been split between two camps: efficient **discriminative** models that have limited capacity and world knowledge, and powerful **generative** LLMs that are slow and unreliable to parse. JPT sits between them: it keeps the LLM's knowledge but classifies tokens in a single pass, like an encoder.
+
+**Generative NER with LLMs.** These methods prompt or fine-tune an LLM to write its answer out as text.
+
+| Method | Approach |
+|:--|:--|
+| [UniversalNER](https://github.com/universal-ner/universal-ner) | Distills ChatGPT into LLaMA-7B through targeted instruction tuning, querying one entity type at a time |
+| [InstructUIE](https://github.com/BeyonderXX/InstructUIE) | Multi-task instruction tuning across many information-extraction datasets |
+| [GoLLIE](https://github.com/hitz-zentroa/GoLLIE) | Fine-tunes the model to follow annotation guidelines written as code |
+| [GNER](https://github.com/yyDing1/GNER) | Adds negative instances (non-entity text) to training, since earlier methods were overly entity-centric |
+| [SaM](https://github.com/Ding-ZJ/SaM) | Selects and merges domain-specific expert adapters at inference time; needs a library of pre-trained experts |
+| [GPT-NER](https://github.com/ShuheWang1998/GPT-NER) | Prompts GPT models to mark entities in the text and adds a self-verification step against hallucinated entities |
+| [PromptNER](https://arxiv.org/abs/2305.15444) | Asks the model to explain why each candidate fits an entity type |
+
+They share the same costs: decoding is sequential, so latency grows with the length of the output; models can hallucinate entities that are not in the input; and outputs sometimes fail to parse. Methods that ask for explanations add even more output. JPT trades these expensive, serial output tokens for cheap, parallel input tokens: the doubled input is read in one prefill pass, and nothing is generated.
+
+**Discriminative encoders.** These methods treat NER as matching text against entity types.
+
+| Method | Approach |
+|:--|:--|
+| [GLiNER](https://github.com/urchade/GLiNER) | DeBERTa encodes entity-type prompts together with the text and matches spans to types in a shared space |
+| [OpenBioNER](https://github.com/disi-unibo-nlp/openbioner) | Biomedical cross-encoder showing that entity definitions beat bare label names for zero-shot NER |
+| [NuNER](https://aclanthology.org/2024.emnlp-main.660/) | Encoder pretrained on large synthetic NER data annotated by an LLM |
+
+They are fast, but their backbones are usually under 1B parameters and carry less world knowledge. JPT adopts OpenBioNER's idea of matching tokens against definitions, applies it to much larger decoder-only LLMs, and also writes the definitions into the prompt, so they guide the model through two channels.
+
+**Other ways to get bidirectional context.** Prefix-LM attention ([UL2](https://arxiv.org/abs/2205.05131)) and [fill-in-the-middle](https://arxiv.org/abs/2207.14255) training need special pretraining, and simply removing the causal mask at inference puts attention out of distribution. [Echo embeddings](https://arxiv.org/abs/2402.15449) also repeat the input, but pool the second copy into one sentence vector for retrieval. JPT keeps the per-token hidden states of the second copy and uses them for token classification, with any off-the-shelf causal LLM.
+
+In short: unlike generative methods, JPT has no decoding latency and no generation hallucinations; unlike encoder-only methods, it uses the knowledge of a multi-billion-parameter LLM; and unlike multi-stage pipelines, it needs a single forward pass.
 
 </details>
 
