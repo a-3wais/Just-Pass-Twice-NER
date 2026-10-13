@@ -131,16 +131,3 @@ If you find JPT useful, please cite our paper:
     ISBN = "979-8-89176-390-6"
 }
 ```
-
-```bibtex
-@misc{ewais2026justpasstwiceefficient,
-      title={Just Pass Twice: Efficient Token Classification with LLMs for Zero-Shot NER},
-      author={Ahmed Ewais and Ahmed Hashish and Amr Ali},
-      year={2026},
-      eprint={2604.05158},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      doi={https://doi.org/10.18653/v1/2026.acl-long.526},
-      url={https://arxiv.org/abs/2604.05158},
-}
-```
