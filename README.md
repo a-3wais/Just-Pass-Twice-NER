@@ -144,6 +144,16 @@ The [Hugging Face Space](https://witness-ai-jpt-ner.hf.space/) has two ways in:
 - **Demo:** paste text, pick a scenario or write your own entity definitions, and see the detected entities.
 - **Reproduce & API:** request an API key for JPT-4B to extract entities programmatically or to reproduce the CrossNER and MIT results from the paper.
 
+## Contact
+
+**Need more capacity?** If the API limits don't cover your use case, contact us:
+
+- [ahmed@witness.ai](mailto:ahmed@witness.ai)
+- [amr@witness.ai](mailto:amr@witness.ai)
+- [ahmed.hashish@witness.ai](mailto:ahmed.hashish@witness.ai)
+
+**Business usage:** please reach out through [witness.ai/contact-us](https://witness.ai/contact-us/).
+
 ## Citation
 
 If you find JPT useful, please cite our paper:
